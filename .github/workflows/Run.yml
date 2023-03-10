@@ -1,0 +1,21 @@
+cp -r $HOME/.steam/steam/SteamApps/common/Half-Life/valve $HOME/Games/Xash3D
+
+cp engine/libxash.so game_launch/xash3d mainui/libxashmenu.so $HOME/Games/Xash3D
+
+cp ../hlsdk/linux/vgui.so vgui_support/vgui_support.so $HOME/Games/Xash3D
+
+cp ../xash3d.sh $HOME/Games/Xash3D
+
+cd $HOME/Games/Xash3D
+./xash3d.sh
+
+LD_LIBRARY_PATH=. ./xash -dev 5
+
+LD_LIBRARY_PATH=. gdb --args ./xash -dev 5
+
+LD_LIBRARY_PATH=. ./xash -dev 5 -vguilib vgui.dll -clientlib valve/cl_dlls/client.dll -dll dlls/hl.dll
+
+cd (game)\
+xash_bin -dev 5
+
+gdb --args ./xash_bin.exe -dev 5
