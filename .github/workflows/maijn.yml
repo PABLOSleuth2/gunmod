@@ -1,0 +1,40 @@
+name: Build android package yea
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build
+      run: |
+        sudo apt-get update
+        sudo apt install -y make openjdk-8-jdk openjdk-8-jre ant-contrib python3-requests python3-pip
+        sudo pip3 install websocket-client
+        git clone --depth 1 https://gitlab.com/LostGamer/ndk-binaries
+        git clone --depth 1 https://gitlab.com/LostGamer/android-sdk
+        git clone --depth 1 https://github.com/nillerusr/srceng-android
+        git submodule init && git submodule update
+
+        export COMMIT=$(git rev-parse HEAD)
+        cd srceng-android
+        ln -s ../ srcsdk
+        ln -s ../ndk-binaries ndk-binaries
+        ln -s ../android-sdk android-sdk
+        DEPLOY_BRANCH=srceng-old-port scripts/workflow.sh
+
+    - name: Upload files
+      shell: bash
+      env:
+        DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+        GH_TOKEN: ${{ secrets.API_GITHUB_TOKEN }}
+      run: |
+        cd srceng-android
+        DEPLOY_BRANCH=srceng-old-port scripts/upload-to-github.sh bin/srceng-debug.apk version
+        CHANNEL_ID=801092155090927626 python3 scripts/send-to-discord.py "Commits history: https://github.com/nillerusr/srcsdk/commits/master\nBuild: https://github.com/nillerusr/srceng-deploy/\nBuild finished at: $(date +%Y-%m-%d-%H:%M)"
